@@ -18,22 +18,23 @@ visusort: ${OBJ}
 	echo '		for (size_t i = 0; i < max_x/2; i++) {' >> .visusort.cpp
 	echo '			_data.push_back((rand()%max_y)+1);' >> .visusort.cpp
 	echo '		}' >> .visusort.cpp
-	echo '' >> .visusort.cpp
+	echo '    VisualWrapper<std::vector<int>> * array;' >> .visusort.cpp
 	grep -o -E '\w+_sort' visusort.cpp | sort -u | while read -r line; do \
 		echo $$line; \
 		num=`echo $$line | wc -c`; \
 		num=`expr $$num / 2`; \
-		echo '		VisualWrapper<std::vector<int>> array(render_one_item, _data);' >> .visusort.cpp; \
+		echo '		array = new VisualWrapper<std::vector<int>> (render_one_item, _data);' >> .visusort.cpp; \
 		echo "		mvprintw(max_y/2, max_x/2-"$$num", \""$$line"\");" >> .visusort.cpp;  \
 		echo '		getch();' >> .visusort.cpp; \
 		echo '		clear();' >> .visusort.cpp; \
 		echo '		render_array(_data, max_y, max_x, WHITE);' >> .visusort.cpp;  \
-		echo '		'$$line"(array);" >> .visusort.cpp; \
-		echo '		array.join();' >> .visusort.cpp; \
+		echo '		'$$line"(*array);" >> .visusort.cpp; \
+		echo '		array->join();' >> .visusort.cpp; \
 		echo '		clear();' >> .visusort.cpp; \
 		echo '		refresh();' >> .visusort.cpp; \
-		echo '		render_array(array.as_array(), max_y, max_x, GREEN);' >> .visusort.cpp; \
+		echo '		render_array(array->as_array(), max_y, max_x, GREEN);' >> .visusort.cpp; \
 		echo '		getch();' >> .visusort.cpp; \
+		echo '		clear();' >> .visusort.cpp; \
 	done
 	echo '		endwin();' >> .visusort.cpp
 	echo '		return 0;' >> .visusort.cpp

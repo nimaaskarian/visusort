@@ -114,3 +114,16 @@ void bubble_sort(VisualWrapper<std::vector<int>> &array) {
   }
 
 }
+
+void insertion_sort(VisualWrapper<std::vector<int>> &array) {
+  for (int i = 1; i < array.size(); i++) {
+    auto key = array[i];
+    auto j = i - 1;
+    while (j >= 0 && array[j] > key) {
+      array[j+1] = array[j];
+      j--;
+    }
+    array[j+1] = key;
+  }
+
+}
