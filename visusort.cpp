@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <ncurses.h>
 #include <thread>
+#include <vector>
 
 enum Color {
   WHITE = 1,
@@ -24,7 +25,8 @@ inline void start_ncurses() {
   init_pair(YELLOW, COLOR_YELLOW, COLOR_BLACK);
 }
 
-void render_one_item(const std::array<int, SIZE>& data, int max_y, int max_x, size_t i, Color color) {
+template <typename T>
+void render_one_item(const T& data, int max_y, int max_x, size_t i, Color color) {
   int height = data[i];
   int x_pos = i * 2;
 
@@ -37,7 +39,8 @@ void render_one_item(const std::array<int, SIZE>& data, int max_y, int max_x, si
   attroff(COLOR_PAIR(color));
 }
 
-void render_array(const std::array<int, SIZE>& data, int max_y, int max_x, Color color) {
+template <typename T>
+void render_array(const T& data, int max_y, int max_x, Color color) {
   for (size_t i = 0; i < data.size(); ++i) {
     render_one_item(data, max_y, max_x, i, color);
   }
@@ -50,10 +53,11 @@ void clear_column_to_bottom(int max_y, int x) {
   }
 }
 
+template <typename T>
 class VisualWrapper {
-  std::array<int, SIZE> array;
+  T array;
   std::thread * last_thread = nullptr;
-  void (*renderer)(const std::array<int, SIZE>&, int, int, size_t, Color);
+  void (*renderer)(const T&, int, int, size_t, Color);
   void render_thread(size_t i) {
     int max_y, max_x;
     getmaxyx(stdscr, max_y, max_x);
@@ -64,7 +68,7 @@ class VisualWrapper {
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
   }
 public:
-  VisualWrapper(void (*renderer)(const std::array<int, SIZE>&, int, int, size_t, Color), std::array<int,SIZE> &array) : array(array), renderer(renderer) {}
+  VisualWrapper(void (*renderer)(const T&, int, int, size_t, Color), T &array) : array(array), renderer(renderer) {}
   int operator[](size_t i) const {
     return array[i];
   }
@@ -75,8 +79,12 @@ public:
     }
   }
 
-  auto as_array() const {
+  const T& as_array() const {
     return array;
+  }
+
+  auto size() {
+    return array.size();
   }
 
   int& operator[](size_t i) {
@@ -89,14 +97,16 @@ public:
   }
 };
 
-void bubble_sort(VisualWrapper &array) {
-  for (int i = 0; i < SIZE; i++) {
+#define swap(left, right) auto tmp = left; \
+  left = right; \
+  right = tmp; \
+
+void bubble_sort(VisualWrapper<std::vector<int>> &array) {
+  for (int i = 0; i < array.size(); i++) {
     bool swapped = false;
-    for (int j = 0; j < SIZE-i-1; j++) {
+    for (int j = 0; j < array.size()-i-1; j++) {
       if (array[j] > array[j+1]) {
-        auto tmp = array[j];
-        array[j] = array[j+1];
-        array[j+1] = tmp;
+        swap(array[j], array[j+1]);
         swapped = true;
       }
     }
@@ -108,17 +118,15 @@ void bubble_sort(VisualWrapper &array) {
 int main (int argc, char *argv[]) {
   start_ncurses();
 
-  std::array<int, SIZE> _data;
+  std::vector<int> _data;
   int max_y, max_x;
   getmaxyx(stdscr, max_y, max_x);
 
   srand((unsigned)time(0));
-  for (size_t i = 0; i < SIZE; i++) {
-    int n;
-    n = (rand()%max_y)+1;
-    _data[i] = n;
+  for (size_t i = 0; i < max_x/2; i++) {
+    _data.push_back((rand()%max_y)+1);
   }
-  VisualWrapper array(render_one_item, _data);
+  VisualWrapper<std::vector<int>> array(render_one_item, _data);
   render_array(_data, max_y, max_x, WHITE);
   getch();
   bubble_sort(array);
