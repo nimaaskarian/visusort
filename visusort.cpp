@@ -114,28 +114,3 @@ void bubble_sort(VisualWrapper<std::vector<int>> &array) {
   }
 
 }
-
-int main (int argc, char *argv[]) {
-  start_ncurses();
-
-  std::vector<int> _data;
-  int max_y, max_x;
-  getmaxyx(stdscr, max_y, max_x);
-
-  srand((unsigned)time(0));
-  for (size_t i = 0; i < max_x/2; i++) {
-    _data.push_back((rand()%max_y)+1);
-  }
-  VisualWrapper<std::vector<int>> array(render_one_item, _data);
-  render_array(_data, max_y, max_x, WHITE);
-  getch();
-  bubble_sort(array);
-  array.join();
-  clear();
-  refresh();
-  render_array(array.as_array(), max_y, max_x, GREEN);
-  getch();
-  endwin();
-
-  return 0;
-}
