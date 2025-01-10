@@ -2,6 +2,9 @@ include config.mk
 SRC=.visusort.cpp
 OBJ=${SRC:.cpp=.o}
 
+run: visusort
+	./visusort
+
 visusort: ${OBJ}
 	g++ $< -o $@ ${LDFLAGS}
 
