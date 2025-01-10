@@ -5,7 +5,7 @@ OBJ=${SRC:.cpp=.o}
 visusort: ${OBJ}
 	g++ $< -o $@ ${LDFLAGS}
 
-.visusort.cpp: visusort.cpp
+.visusort.cpp: visusort.cpp .algoignore
 	cat visusort.cpp > .visusort.cpp
 	echo '	int main (int argc, char *argv[]) {' >> .visusort.cpp
 	echo '		start_ncurses();' >> .visusort.cpp
@@ -19,7 +19,7 @@ visusort: ${OBJ}
 	echo '			_data.push_back((rand()%max_y)+1);' >> .visusort.cpp
 	echo '		}' >> .visusort.cpp
 	echo '    VisualWrapper<std::vector<int>> * array;' >> .visusort.cpp
-	grep -o -E '\w+_sort' visusort.cpp | sort -u | while read -r line; do \
+	grep -o -E '\w+_sort' visusort.cpp | grep -v -f .algoignore | sort -u | while read -r line; do \
 		echo $$line; \
 		num=`echo $$line | wc -c`; \
 		num=`expr $$num / 2`; \
