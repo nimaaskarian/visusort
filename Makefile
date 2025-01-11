@@ -34,7 +34,7 @@ visusort: ${OBJ}
 	echo '		srand((unsigned)time(0));' >> .visusort.cpp
 	echo '    data_init(_data, data_size, max_y);' >> .visusort.cpp
 	echo '    VisualWrapper<std::vector<int>> * array;' >> .visusort.cpp
-	grep -o -E '\w+_sort' visusort.cpp | grep -v -f .algoignore | uniq | while read -r line; do \
+	grep -o -E '\w+_sort\(' visusort.cpp | grep -v -f .algoignore | uniq | cut -f 1  -d '(' | while read -r line; do \
 		num=`echo $$line | wc -c`; \
 		num=`expr $$num / 2`; \
 		call=`grep -o -E "call: $$line(.*)" visusort.cpp | cut -d ' ' -f "2-"`;\

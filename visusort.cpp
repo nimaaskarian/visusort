@@ -2,6 +2,7 @@
 #include <array>
 #include <clocale>
 #include <cstdlib>
+#include <iostream>
 #include <ncurses.h>
 #include <thread>
 #include <vector>
@@ -233,4 +234,25 @@ void commie_sort(VisualWrapper<std::vector<int>> &array) {
   for (int i = 0; i < array.size();i++) {
     array[i] = mean;
   }
+}
+
+bool is_sorted(const std::vector<int> &array) {
+  int n = array.size();
+  while (--n > 0)
+    if (array[n] < array[n - 1])
+        return false;
+  return true;
+}
+
+void shuffle(VisualWrapper<std::vector<int>> &array) {
+  size_t n = array.size();
+  for (int i = 0; i < n; i++) {
+    auto j = rand() % n;
+    swap(array[i], array[j]);
+  }
+}
+
+void bogo_sort(VisualWrapper<std::vector<int>> &array) {
+  while (!is_sorted(array.as_array()))
+    shuffle(array);
 }
