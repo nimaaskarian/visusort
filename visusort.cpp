@@ -8,7 +8,8 @@
 enum Color {
   WHITE = 1,
   GREEN,
-  YELLOW
+  YELLOW,
+  RED,
 };
 constexpr size_t SIZE = 20;
 #define DATATYPE = int;
@@ -23,6 +24,7 @@ inline void start_ncurses() {
   init_pair(WHITE, COLOR_WHITE, COLOR_BLACK);
   init_pair(GREEN, COLOR_GREEN, COLOR_BLACK);
   init_pair(YELLOW, COLOR_YELLOW, COLOR_BLACK);
+  init_pair(RED, COLOR_RED, COLOR_BLACK);
 }
 
 void data_init_random(std::vector<int>& data,size_t size, int max) {
@@ -142,6 +144,18 @@ public:
     last_thread = new std::thread(&VisualWrapper::render_thread, this, i);
     return array[i];
   }
+
+  void hot_point(size_t i) {
+    if (last_thread) {
+      last_thread->join();
+      delete last_thread;
+      last_thread = nullptr;
+    }
+    int max_y, max_x;
+    getmaxyx(stdscr, max_y, max_x);
+    clear_column_to_bottom(max_y, i*2);
+    renderer(array, max_y, max_x, i, RED);
+  }
 };
 
 #define swap(left, right) auto tmp = left; \
@@ -219,6 +233,7 @@ void merge(VisualWrapper<std::vector<int>> &array, size_t low, size_t mid, size_
 void merge_sort(VisualWrapper<std::vector<int>> &array, size_t low, size_t high) {
   if (low < high) {
     size_t mid = low+(high-low)/2;
+    array.hot_point(mid);
     merge_sort(array, low, mid);
     merge_sort(array, mid+1, high);
     merge(array, low, mid, high);
@@ -226,6 +241,7 @@ void merge_sort(VisualWrapper<std::vector<int>> &array, size_t low, size_t high)
 }
 
 size_t partition(VisualWrapper<std::vector<int>> &array, size_t low, size_t high) {
+  array.hot_point(high);
   int pivot = array[high];
   int i = low - 1;
   for (int j = low; j < high; j++) {
