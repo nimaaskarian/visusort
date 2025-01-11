@@ -16,6 +16,13 @@ visusort: ${OBJ}
 	echo '		int max_y, max_x;' >> .visusort.cpp
 	echo '		getmaxyx(stdscr, max_y, max_x);' >> .visusort.cpp
 	echo '    size_t data_size;' >> .visusort.cpp
+	echo '    VisualWrapperConfig config{};' >> .visusort.cpp
+	echo '    if (const char * str = std::getenv("VISUSORT_WAIT_FOR_CHANGE")) {' >> .visusort.cpp
+	echo '        config.wait_for_change_ms = atoi(str);' >> .visusort.cpp
+	echo '    }' >> .visusort.cpp
+	echo '    if (const char * str = std::getenv("VISUSORT_WAIT_AFTER")) {' >> .visusort.cpp
+	echo '        config.wait_after_ms = atoi(str);' >> .visusort.cpp
+	echo '    }' >> .visusort.cpp
 	echo '    if (const char * sizestr = std::getenv("VISUSORT_SIZE")) {' >> .visusort.cpp
 	echo '        data_size = atoi(sizestr);' >> .visusort.cpp
 	echo '    } else {' >> .visusort.cpp
@@ -36,7 +43,7 @@ visusort: ${OBJ}
 		echo $$line $$call; \
 		[ "$$call" ] || call=$$line"(*array)";\
 		call="$$call;";\
-		echo '		array = new VisualWrapper<std::vector<int>> (render_one_item, _data);' >> .visusort.cpp; \
+		echo '		array = new VisualWrapper<std::vector<int>> (render_one_item, _data, config);' >> .visusort.cpp; \
 		echo "		mvprintw(max_y/2, max_x/2-"$$num", \""$$line"\");" >> .visusort.cpp;  \
 		echo '		getch();' >> .visusort.cpp; \
 		echo '		clear();' >> .visusort.cpp; \

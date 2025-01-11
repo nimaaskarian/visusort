@@ -53,23 +53,29 @@ void clear_column_to_bottom(int max_y, int x) {
     mvaddch(y,x,' ');
   }
 }
+struct VisualWrapperConfig {
+  size_t wait_for_change_ms = 1;
+  size_t wait_after_ms = 5;
+};
 
 template <typename T>
 class VisualWrapper {
   T array;
+  VisualWrapperConfig config;
   std::thread * last_thread = nullptr;
   void (*renderer)(const T&, int, int, size_t, Color);
   void render_thread(size_t i) {
     int max_y, max_x;
     getmaxyx(stdscr, max_y, max_x);
     clear_column_to_bottom(max_y, i*2);
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(config.wait_for_change_ms));
     renderer(array, max_y, max_x, i, YELLOW);
     refresh();
-    std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    std::this_thread::sleep_for(std::chrono::milliseconds(config.wait_after_ms));
   }
 public:
-  VisualWrapper(void (*renderer)(const T&, int, int, size_t, Color), T &array) : array(array), renderer(renderer) {}
+  VisualWrapper(void (*renderer)(const T&, int, int, size_t, Color), T &array, VisualWrapperConfig config) 
+  : array(array), renderer(renderer), config(config) {}
   void join() {
     if (last_thread) {
       last_thread->join();
@@ -179,5 +185,16 @@ void quick_sort(VisualWrapper<std::vector<int>> &array, int low, int high) {
     size_t p = partition(array, low, high);
     quick_sort(array, low, p-1);
     quick_sort(array, p+1, high);
+  }
+}
+
+void commie_sort(VisualWrapper<std::vector<int>> &array) {
+  int sum = 0;
+  for (auto &item: array.as_array()) {
+    sum+=item;
+  }
+  int mean = sum/array.size();
+  for (int i = 0; i < array.size();i++) {
+    array[i] = mean;
   }
 }
