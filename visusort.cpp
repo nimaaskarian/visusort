@@ -10,6 +10,7 @@ enum Color {
   GREEN,
   YELLOW,
   RED,
+  BLUE,
 };
 constexpr size_t SIZE = 20;
 #define DATATYPE = int;
@@ -25,6 +26,7 @@ inline void start_ncurses() {
   init_pair(GREEN, COLOR_GREEN, COLOR_BLACK);
   init_pair(YELLOW, COLOR_YELLOW, COLOR_BLACK);
   init_pair(RED, COLOR_RED, COLOR_BLACK);
+  init_pair(BLUE, COLOR_BLUE, COLOR_BLACK);
 }
 
 void data_init_random(std::vector<int>& data,size_t size, int max) {
@@ -144,12 +146,12 @@ public:
     return array[i];
   }
 
-  void hot_point(size_t i) {
+  void hot_point(size_t i, Color color = RED) {
     join();
     int max_y, max_x;
     getmaxyx(stdscr, max_y, max_x);
     clear_column_to_bottom(max_y, i*2);
-    renderer(array, max_y, max_x, i, RED);
+    renderer(array, max_y, max_x, i, color);
   }
 };
 
@@ -253,6 +255,7 @@ size_t partition(VisualWrapper<std::vector<int>> &array, size_t low, size_t high
 void quick_sort(VisualWrapper<std::vector<int>> &array, int low, int high) {
   if (low < high) {
     size_t p = partition(array, low, high);
+    array.hot_point(p, BLUE);
     quick_sort(array, low, p-1);
     quick_sort(array, p+1, high);
   }
@@ -281,6 +284,7 @@ void mo3_quick_sort(VisualWrapper<std::vector<int>> &array, int low, int high) {
   if (low < high) {
     move_mo3_to_high(array, low, high);
     size_t p = partition(array, low, high);
+    array.hot_point(p, BLUE);
     quick_sort(array, low, p-1);
     quick_sort(array, p+1, high);
   }
