@@ -1,10 +1,7 @@
-#include <algorithm>
-#include <array>
 #include <clocale>
-#include <cstdlib>
 #include <cstring>
-#include <iostream>
 #include <ncurses.h>
+#include <random>
 #include <thread>
 #include <vector>
 
@@ -29,8 +26,11 @@ inline void start_ncurses() {
 }
 
 void data_init_random(std::vector<int>& data,size_t size, int max) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distr(1, max);
     for (size_t i = 0; i < size; i++) {
-    data.push_back((rand()%max)+1);
+    data.push_back(distr(gen));
   }
 }
 
@@ -237,6 +237,34 @@ size_t partition(VisualWrapper<std::vector<int>> &array, size_t low, size_t high
  // call: quick_sort(*array, 0, array->size()-1)
 void quick_sort(VisualWrapper<std::vector<int>> &array, int low, int high) {
   if (low < high) {
+    size_t p = partition(array, low, high);
+    quick_sort(array, low, p-1);
+    quick_sort(array, p+1, high);
+  }
+}
+
+void move_mo3_to_high(VisualWrapper<std::vector<int>> &array, int low, int high) {
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> distr(low, high);
+  size_t i1 = distr(gen);
+  size_t i2 = distr(gen);
+  size_t i3 = distr(gen);
+  size_t median;
+  if (array[i1] > array[i2] == array[i2] < array[i3]) {
+    median = i2;
+  } else if (array[i2] > array[i1] == array[i1] < array[i3]) {
+    median = i1;
+  } else {
+    median = i3;
+  }
+  swap(array[median], array[high]);
+}
+
+ // call: mo3_quick_sort(*array, 0, array->size()-1)
+void mo3_quick_sort(VisualWrapper<std::vector<int>> &array, int low, int high) {
+  if (low < high) {
+    move_mo3_to_high(array, low, high);
     size_t p = partition(array, low, high);
     quick_sort(array, low, p-1);
     quick_sort(array, p+1, high);
