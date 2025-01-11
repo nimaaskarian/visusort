@@ -32,9 +32,7 @@ visusort: ${OBJ}
 	echo '    _data.reserve(data_size);'
 	echo '' >> .visusort.cpp
 	echo '		srand((unsigned)time(0));' >> .visusort.cpp
-	echo '		for (size_t i = 0; i < data_size; i++) {' >> .visusort.cpp
-	echo '			_data.push_back((rand()%max_y)+1);' >> .visusort.cpp
-	echo '		}' >> .visusort.cpp
+	echo '    data_init(_data, data_size, max_y);' >> .visusort.cpp
 	echo '    VisualWrapper<std::vector<int>> * array;' >> .visusort.cpp
 	grep -o -E '\w+_sort' visusort.cpp | grep -v -f .algoignore | uniq | while read -r line; do \
 		num=`echo $$line | wc -c`; \
@@ -60,5 +58,7 @@ visusort: ${OBJ}
 	echo '		return 0;' >> .visusort.cpp
 	echo '	}' >> .visusort.cpp
 
+clean:
+	rm .visusort.cpp ${OBJ} visusort
 .cpp.o:
 	g++ -c ${CFLAGS} $< -o $@

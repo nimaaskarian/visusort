@@ -26,6 +26,42 @@ inline void start_ncurses() {
   init_pair(YELLOW, COLOR_YELLOW, COLOR_BLACK);
 }
 
+void data_init_random(std::vector<int>& data,size_t size, int max) {
+    for (size_t i = 0; i < size; i++) {
+    data.push_back((rand()%max)+1);
+  }
+}
+
+void data_init_ascending(std::vector<int>& data,size_t size, int max) {
+  int bin_size = size/max+1;
+  for (size_t i = 0;i < size; i+=bin_size) {
+    for (size_t j = 0; j < bin_size; j++) {
+      data.push_back(i/bin_size+1);
+      if (data.size() >= size) {
+        return;
+      }
+    }
+  }
+}
+
+void data_init_descending(std::vector<int>& data,size_t size, int max) {
+  int bin_size = size/max+1;
+  for (size_t i = 0;i < size; i+=bin_size) {
+    for (size_t j = 0; j < bin_size; j++) {
+      data.push_back(max-i/bin_size);
+      if (data.size() >= size) {
+        return;
+      }
+    }
+  }
+}
+
+void data_init(std::vector<int>& data,size_t size, int max) {
+  // data_init_ascending(data, size, max);
+  data_init_random(data, size, max);
+  // data_init_descending(data, size, max);
+}
+
 template <typename T>
 void render_one_item(const T& data, int max_y, int max_x, size_t i, Color color) {
   int height = data[i];
