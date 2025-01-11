@@ -122,9 +122,11 @@ class VisualWrapper {
 public:
   VisualWrapper(void (*renderer)(const T&, int, int, size_t, Color), T &array, VisualWrapperConfig config) 
   : array(array), renderer(renderer), config(config) {}
-  void join() {
+  inline void join() {
     if (last_thread) {
       last_thread->join();
+      delete last_thread;
+      last_thread = nullptr;
     }
   }
 
@@ -137,20 +139,13 @@ public:
   }
 
   auto& operator[](size_t i) {
-    if (last_thread) {
-      last_thread->join();
-      delete last_thread;
-    }
+    join();
     last_thread = new std::thread(&VisualWrapper::render_thread, this, i);
     return array[i];
   }
 
   void hot_point(size_t i) {
-    if (last_thread) {
-      last_thread->join();
-      delete last_thread;
-      last_thread = nullptr;
-    }
+    join();
     int max_y, max_x;
     getmaxyx(stdscr, max_y, max_x);
     clear_column_to_bottom(max_y, i*2);
@@ -241,8 +236,8 @@ void merge_sort(VisualWrapper<std::vector<int>> &array, size_t low, size_t high)
 }
 
 size_t partition(VisualWrapper<std::vector<int>> &array, size_t low, size_t high) {
-  array.hot_point(high);
   int pivot = array[high];
+  array.hot_point(high);
   int i = low - 1;
   for (int j = low; j < high; j++) {
     if (array.as_array()[j] < pivot) {
