@@ -273,3 +273,33 @@ void bogo_sort(VisualWrapper<std::vector<int>> &array) {
   while (!is_sorted(array.as_array()))
     shuffle(array);
 }
+
+void max_heapify(VisualWrapper<std::vector<int>> &array, size_t i, size_t n) {
+  size_t left = 2*i + 1;
+  size_t right = 2*i + 2;
+  size_t largest;
+
+  if (left < n && array[left] > array[i]) largest = left;
+  else largest = i;
+
+  if (right < n && array[right] > array[largest]) largest = right;
+
+  if (largest != i) {
+    swap(array[i], array[largest])
+    max_heapify(array, largest, n);
+  }
+}
+
+void build_max_heap(VisualWrapper<std::vector<int>> &array) {
+  auto n = array.size();
+  for (int i = array.size()/2-1; i >= 0; i--)
+    max_heapify(array, i, n);
+}
+
+void heap_sort(VisualWrapper<std::vector<int>> &array) {
+  build_max_heap(array);
+  for (int i = array.size()-1; i > 0; i--) {
+    swap(array[i], array[0]);
+    max_heapify(array, 0, i);
+  }
+}
