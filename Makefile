@@ -13,17 +13,23 @@ visusort: ${OBJ}
 	echo '	int main (int argc, char *argv[]) {' >> .visusort.cpp
 	echo '		start_ncurses();' >> .visusort.cpp
 	echo '' >> .visusort.cpp
-	echo '		std::vector<int> _data;' >> .visusort.cpp
 	echo '		int max_y, max_x;' >> .visusort.cpp
 	echo '		getmaxyx(stdscr, max_y, max_x);' >> .visusort.cpp
+	echo '    size_t data_size;' >> .visusort.cpp
+	echo '    if (const char * sizestr = std::getenv("VISUSORT_SIZE")) {' >> .visusort.cpp
+	echo '        data_size = atoi(sizestr);' >> .visusort.cpp
+	echo '    } else {' >> .visusort.cpp
+	echo '        data_size = max_x/2;' >> .visusort.cpp
+	echo '    }' >> .visusort.cpp
+	echo '		std::vector<int> _data;' >> .visusort.cpp
+	echo '    _data.reserve(data_size);'
 	echo '' >> .visusort.cpp
 	echo '		srand((unsigned)time(0));' >> .visusort.cpp
-	echo '		for (size_t i = 0; i < max_x/2; i++) {' >> .visusort.cpp
+	echo '		for (size_t i = 0; i < data_size; i++) {' >> .visusort.cpp
 	echo '			_data.push_back((rand()%max_y)+1);' >> .visusort.cpp
 	echo '		}' >> .visusort.cpp
 	echo '    VisualWrapper<std::vector<int>> * array;' >> .visusort.cpp
 	grep -o -E '\w+_sort' visusort.cpp | grep -v -f .algoignore | sort -u | while read -r line; do \
-		# echo $$line; \
 		num=`echo $$line | wc -c`; \
 		num=`expr $$num / 2`; \
 		call=`grep -o -E "call: $$line(.*)" visusort.cpp | cut -d ' ' -f "2-"`;\
