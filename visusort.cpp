@@ -188,11 +188,12 @@ void bubble_sort(VisualWrapper<std::vector<int>> &array) {
 
 }
 
-void insertion_sort(VisualWrapper<std::vector<int>> &array) {
-  for (int i = 1; i < array.size(); i++) {
+// call: insertion_sort(*array, 0, array->size()-1)
+void insertion_sort(VisualWrapper<std::vector<int>> &array, size_t start, size_t n) {
+  for (int i = start+1; i <= n; i++) {
     auto key = array[i];
     auto j = i - 1;
-    while (j >= 0 && array[j] > key) {
+    while (j >= start && array[j] > key) {
       array[j+1] = array[j];
       j--;
     }
@@ -349,5 +350,20 @@ void heap_sort(VisualWrapper<std::vector<int>> &array) {
   for (int i = array.size()-1; i > 0; i--) {
     swap(array[i], array[0]);
     max_heapify(array, 0, i);
+  }
+}
+
+// call: immersion_sort(*array, 0, array->size()-1)
+void immersion_sort(VisualWrapper<std::vector<int>> &array, int low, int high) {
+  if (high - low > 10) {
+    size_t mid = low+(high-low)/2;
+    immersion_sort(array, low, mid);
+    immersion_sort(array, mid+1, high);
+    array.hot_point(mid, RED);
+    merge(array, low, mid, high);
+  } else {
+    array.hot_point(low, GREEN);
+    array.hot_point(high, GREEN);
+    insertion_sort(array, low, high);
   }
 }
