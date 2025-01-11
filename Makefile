@@ -15,19 +15,8 @@ visusort: ${OBJ}
 	echo '' >> .visusort.cpp
 	echo '		int max_y, max_x;' >> .visusort.cpp
 	echo '		getmaxyx(stdscr, max_y, max_x);' >> .visusort.cpp
-	echo '    size_t data_size;' >> .visusort.cpp
 	echo '    VisualWrapperConfig config{};' >> .visusort.cpp
-	echo '    if (const char * str = std::getenv("VISUSORT_WAIT_FOR_CHANGE")) {' >> .visusort.cpp
-	echo '        config.wait_for_change_ms = atoi(str);' >> .visusort.cpp
-	echo '    }' >> .visusort.cpp
-	echo '    if (const char * str = std::getenv("VISUSORT_WAIT_AFTER")) {' >> .visusort.cpp
-	echo '        config.wait_after_ms = atoi(str);' >> .visusort.cpp
-	echo '    }' >> .visusort.cpp
-	echo '    if (const char * sizestr = std::getenv("VISUSORT_SIZE")) {' >> .visusort.cpp
-	echo '        data_size = atoi(sizestr);' >> .visusort.cpp
-	echo '    } else {' >> .visusort.cpp
-	echo '        data_size = max_x/2;' >> .visusort.cpp
-	echo '    }' >> .visusort.cpp
+	echo '    size_t data_size = read_envs(config, max_x);' >> .visusort.cpp
 	echo '		std::vector<int> _data;' >> .visusort.cpp
 	echo '    _data.reserve(data_size);'
 	echo '' >> .visusort.cpp

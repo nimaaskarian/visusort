@@ -2,6 +2,7 @@
 #include <array>
 #include <clocale>
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <ncurses.h>
 #include <thread>
@@ -58,9 +59,11 @@ void data_init_descending(std::vector<int>& data,size_t size, int max) {
 }
 
 void data_init(std::vector<int>& data,size_t size, int max) {
-  // data_init_ascending(data, size, max);
+  if (const char * str = std::getenv("VISUSORT_DATA")) {
+    if (!strcmp(str, "ascending")) return data_init_ascending(data, size, max);
+    else if (!strcmp(str, "descending")) return data_init_descending(data, size, max);
+  }
   data_init_random(data, size, max);
-  // data_init_descending(data, size, max);
 }
 
 template <typename T>
@@ -140,6 +143,20 @@ public:
 #define swap(left, right) auto tmp = left; \
   left = right; \
   right = tmp; \
+
+size_t read_envs(VisualWrapperConfig &config, int max_x) {
+  if (const char * str = std::getenv("VISUSORT_WAIT_FOR_CHANGE")) {
+    config.wait_for_change_ms = atoi(str);
+  }
+  if (const char * str = std::getenv("VISUSORT_WAIT_AFTER")) {
+    config.wait_after_ms = atoi(str);
+  }
+  if (const char * sizestr = std::getenv("VISUSORT_SIZE")) {
+    return atoi(sizestr);
+  } else {
+    return max_x/2;
+  }
+}
 
 void bubble_sort(VisualWrapper<std::vector<int>> &array) {
   for (int i = 0; i < array.size(); i++) {
