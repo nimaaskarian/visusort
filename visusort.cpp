@@ -152,10 +152,11 @@ size_t read_envs(VisualWrapperConfig &config, int max_x) {
     config.wait_after_ms = atoi(str);
   }
   if (const char * sizestr = std::getenv("VISUSORT_SIZE")) {
-    return atoi(sizestr);
-  } else {
-    return max_x/2;
+     if (int out=atoi(sizestr)) {
+      return out;
+    }
   }
+  return max_x/2;
 }
 
 void bubble_sort(VisualWrapper<std::vector<int>> &array) {
