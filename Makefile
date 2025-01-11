@@ -43,6 +43,7 @@ visusort: ${OBJ}
 		echo '		getch();' >> .visusort.cpp; \
 		echo '		clear();' >> .visusort.cpp; \
 	done
+	echo '     curs_set(1);' >> .visusort.cpp
 	echo '		endwin();' >> .visusort.cpp
 	echo '		return 0;' >> .visusort.cpp
 	echo '	}' >> .visusort.cpp
