@@ -29,7 +29,7 @@ visusort: ${OBJ}
 	echo '			_data.push_back((rand()%max_y)+1);' >> .visusort.cpp
 	echo '		}' >> .visusort.cpp
 	echo '    VisualWrapper<std::vector<int>> * array;' >> .visusort.cpp
-	grep -o -E '\w+_sort' visusort.cpp | grep -v -f .algoignore | sort -u | while read -r line; do \
+	grep -o -E '\w+_sort' visusort.cpp | grep -v -f .algoignore | uniq | while read -r line; do \
 		num=`echo $$line | wc -c`; \
 		num=`expr $$num / 2`; \
 		call=`grep -o -E "call: $$line(.*)" visusort.cpp | cut -d ' ' -f "2-"`;\

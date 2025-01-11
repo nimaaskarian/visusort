@@ -70,10 +70,6 @@ class VisualWrapper {
   }
 public:
   VisualWrapper(void (*renderer)(const T&, int, int, size_t, Color), T &array) : array(array), renderer(renderer) {}
-  int operator[](size_t i) const {
-    return array[i];
-  }
-
   void join() {
     if (last_thread) {
       last_thread->join();
@@ -88,7 +84,7 @@ public:
     return array.size();
   }
 
-  int& operator[](size_t i) {
+  auto& operator[](size_t i) {
     if (last_thread) {
       last_thread->join();
       delete last_thread;
@@ -161,5 +157,27 @@ void merge_sort(VisualWrapper<std::vector<int>> &array, size_t low, size_t high)
     merge_sort(array, low, mid);
     merge_sort(array, mid+1, high);
     merge(array, low, mid, high);
+  }
+}
+
+size_t partition(VisualWrapper<std::vector<int>> &array, size_t low, size_t high) {
+  int pivot = array[high];
+  int i = low - 1;
+  for (int j = low; j < high; j++) {
+    if (array.as_array()[j] < pivot) {
+      i++;
+      swap(array[j], array[i]);
+    }
+  }
+  swap(array[i+1], array[high]);
+  return i+1;
+}
+
+ // call: quick_sort(*array, 0, array->size()-1)
+void quick_sort(VisualWrapper<std::vector<int>> &array, int low, int high) {
+  if (low < high) {
+    size_t p = partition(array, low, high);
+    quick_sort(array, low, p-1);
+    quick_sort(array, p+1, high);
   }
 }
