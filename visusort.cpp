@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <array>
 #include <clocale>
 #include <cstdlib>
@@ -126,4 +127,39 @@ void insertion_sort(VisualWrapper<std::vector<int>> &array) {
     array[j+1] = key;
   }
 
+}
+void merge(VisualWrapper<std::vector<int>> &array, size_t low, size_t mid, size_t high) {
+  std::vector<int> left(array.as_array().begin() + low, array.as_array().begin() + mid + 1);
+  std::vector<int> right(array.as_array().begin() + mid + 1, array.as_array().begin() + high + 1);
+  size_t l = 0, r = 0, i = low;
+  while (l < left.size() && r < right.size()) {
+    if (left[l] <= right[r]) {
+      array[i] = left[l];
+      l++;
+    } else {
+      array[i] = right[r];
+      r++;
+    }
+    i++;
+  }
+
+  while (l < left.size()) {
+    array[i] = left[l];
+    i++;
+    l++;
+  }
+  while (r < right.size()) {
+    array[i] = right[r];
+    i++;
+    r++;
+  }
+}
+ // call: merge_sort(*array, 0, array->size()-1)
+void merge_sort(VisualWrapper<std::vector<int>> &array, size_t low, size_t high) {
+  if (low < high) {
+    size_t mid = low+(high-low)/2;
+    merge_sort(array, low, mid);
+    merge_sort(array, mid+1, high);
+    merge(array, low, mid, high);
+  }
 }

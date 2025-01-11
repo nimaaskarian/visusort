@@ -23,15 +23,19 @@ visusort: ${OBJ}
 	echo '		}' >> .visusort.cpp
 	echo '    VisualWrapper<std::vector<int>> * array;' >> .visusort.cpp
 	grep -o -E '\w+_sort' visusort.cpp | grep -v -f .algoignore | sort -u | while read -r line; do \
-		echo $$line; \
+		# echo $$line; \
 		num=`echo $$line | wc -c`; \
 		num=`expr $$num / 2`; \
+		call=`grep -o -E "call: $$line(.*)" visusort.cpp | cut -d ' ' -f "2-"`;\
+		echo $$line $$call; \
+		[ "$$call" ] || call=$$line"(*array)";\
+		call="$$call;";\
 		echo '		array = new VisualWrapper<std::vector<int>> (render_one_item, _data);' >> .visusort.cpp; \
 		echo "		mvprintw(max_y/2, max_x/2-"$$num", \""$$line"\");" >> .visusort.cpp;  \
 		echo '		getch();' >> .visusort.cpp; \
 		echo '		clear();' >> .visusort.cpp; \
 		echo '		render_array(_data, max_y, max_x, WHITE);' >> .visusort.cpp;  \
-		echo '		'$$line"(*array);" >> .visusort.cpp; \
+		echo '		'$$call >> .visusort.cpp; \
 		echo '		array->join();' >> .visusort.cpp; \
 		echo '		clear();' >> .visusort.cpp; \
 		echo '		refresh();' >> .visusort.cpp; \
