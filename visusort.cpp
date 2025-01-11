@@ -30,10 +30,10 @@ inline void start_ncurses() {
 }
 
 void data_init_random(std::vector<int>& data,size_t size, int max) {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distr(1, max);
-    for (size_t i = 0; i < size; i++) {
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> distr(1, max);
+  for (size_t i = 0; i < size; i++) {
     data.push_back(distr(gen));
   }
 }
