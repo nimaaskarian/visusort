@@ -34,11 +34,19 @@ void data_init_random(std::vector<int>& data,size_t size, int max) {
   }
 }
 
-void data_init_ascending(std::vector<int>& data,size_t size, int max) {
-  int bin_size = size/max+1;
-  for (size_t i = 0;i < size; i+=bin_size) {
-    for (size_t j = 0; j < bin_size; j++) {
-      data.push_back(i/bin_size+1);
+inline void data_init_ordered(std::vector<int>& data,size_t size, int max, int (*handler)(int, int)) {
+  int bin_size = size/max;
+  int rest = size%max;
+  for (size_t i = 0;i < max; i++) {
+    int j;
+    if (i%2 && rest > 0) {
+      j = -1;
+      rest--;
+    } else {
+      j = 0;
+    }
+    for (;j < bin_size; j++) {
+      data.push_back(handler(i, max));
       if (data.size() >= size) {
         return;
       }
@@ -46,22 +54,18 @@ void data_init_ascending(std::vector<int>& data,size_t size, int max) {
   }
 }
 
-void data_init_descending(std::vector<int>& data,size_t size, int max) {
-  int bin_size = size/max+1;
-  for (size_t i = 0;i < size; i+=bin_size) {
-    for (size_t j = 0; j < bin_size; j++) {
-      data.push_back(max-i/bin_size);
-      if (data.size() >= size) {
-        return;
-      }
-    }
-  }
+int ascending_handler(int i, int max) {
+  return i+1;
+}
+
+int descending_handler(int i, int max) {
+  return max-i;
 }
 
 void data_init(std::vector<int>& data,size_t size, int max) {
   if (const char * str = std::getenv("VISUSORT_DATA")) {
-    if (!strcmp(str, "ascending")) return data_init_ascending(data, size, max);
-    else if (!strcmp(str, "descending")) return data_init_descending(data, size, max);
+    if (!strcmp(str, "ascending")) return data_init_ordered(data, size, max, ascending_handler);
+    else if (!strcmp(str, "descending")) return data_init_ordered(data, size, max, descending_handler);
   }
   data_init_random(data, size, max);
 }
