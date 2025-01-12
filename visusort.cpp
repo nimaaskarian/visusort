@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <atomic>
 #include <clocale>
 #include <cstring>
 #include <ncurses.h>
@@ -111,6 +113,7 @@ class VisualWrapper {
   T array;
   VisualWrapperConfig config;
   std::thread * last_thread = nullptr;
+  std::atomic_bool should_render;
   void (*renderer)(const T&, int, int, size_t, Color);
   void render_thread(size_t i) {
     int max_y, max_x;
@@ -121,6 +124,15 @@ class VisualWrapper {
     refresh();
     std::this_thread::sleep_for(std::chrono::milliseconds(config.wait_after_ms));
   }
+  void render_all() {
+    while (should_render) {
+      for (int i = 0; i < size(); i++)
+        render_thread(i);
+    }
+    for (int i = 0; i < size(); i++)
+      render_thread(i);
+  }
+
 public:
   VisualWrapper(void (*renderer)(const T&, int, int, size_t, Color), T &array, VisualWrapperConfig config) 
   :array(array), renderer(renderer), config(config) {}
@@ -130,6 +142,25 @@ public:
       delete last_thread;
       last_thread = nullptr;
     }
+  }
+
+  void start_render() {
+    join();
+    should_render = true;
+    last_thread = new std::thread(&VisualWrapper::render_all, this);
+  }
+
+  auto begin() {
+    return &array[0];
+  }
+
+  auto end() {
+    return &array[size()];
+  }
+
+  void stop_render() {
+    should_render = false;
+    join();
   }
 
   const T& as_array() const {
@@ -438,6 +469,11 @@ void you_sort(VisualWrapper<std::vector<int>> &array) {
       break;
       case 's':
         shuffle(array);
+      break;
+      case 'S':
+        array.start_render();
+        std::sort(array.begin(), array.end());
+        array.stop_render();
       break;
       case '\n':
         {
