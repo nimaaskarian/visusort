@@ -136,8 +136,12 @@ public:
     return array;
   }
 
-  auto size() {
+  auto size() const {
     return array.size();
+  }
+
+  auto& operator[](size_t i) const {
+    return array[i];
   }
 
   auto& operator[](size_t i) {
@@ -183,6 +187,7 @@ void bubble_sort(VisualWrapper<std::vector<int>> &array) {
         swapped = true;
       }
     }
+    array.hot_point(array.size()-i-1, GREEN);
     if (!swapped) break;
   }
 
@@ -365,5 +370,76 @@ void immersion_sort(VisualWrapper<std::vector<int>> &array, int low, int high, s
   } else {
     array.hot_point(high, BLUE);
     insertion_sort(array, low, high);
+  }
+}
+
+void you_sort(VisualWrapper<std::vector<int>> &array) {
+  int selected = 0;
+  while (int ch = getch()) {
+    array.hot_point(selected, WHITE);
+    switch (ch) {
+      case 'j': 
+      case 'l': 
+        selected=(selected+1)%array.size();
+      break;
+      case 'h': 
+      case 'k': 
+        if (selected) selected--;
+        else selected=array.size()-1;
+      break;
+      case 'g':
+      selected = 0;
+      break;
+      case 'G':
+      selected = array.size()-1;
+      break;
+      case 'H': 
+      case 'K': 
+        if (selected-1 >= 0) {
+          swap(array[selected], array[selected-1]);
+          selected--;
+        }
+      break;
+      case 'J': 
+      case 'L': 
+        if (selected+1 < array.size()) {
+          swap(array[selected], array[selected+1]);
+          selected++;
+        }
+      break;
+      case 'q': 
+        quick_sort(array, 0, array.size()-1);
+      break;
+      case 'm': 
+        merge_sort(array, 0, array.size()-1);
+      break;
+      case 'i': 
+        insertion_sort(array, 0, array.size()-1);
+      break;
+      case 'I': 
+        immersion_sort(array, 0, array.size()-1, 10);
+      break;
+      case 'e': 
+        heap_sort(array);
+      break;
+      case 's':
+        shuffle(array);
+      break;
+      case '\n':
+        {
+          int max_y, max_x;
+          getmaxyx(stdscr, max_y, max_x);
+          bool sorted = is_sorted(array.as_array());
+          if (sorted) {
+            render_array(array,max_y, max_x, GREEN);
+            return;
+          } 
+          render_array(array,max_y, max_x, RED);
+          std::this_thread::sleep_for(std::chrono::milliseconds(500));
+          render_array(array,max_y, max_x, WHITE);
+        }
+      break;
+    }
+    array.hot_point(selected);
   }
 }
