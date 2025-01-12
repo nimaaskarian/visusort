@@ -231,6 +231,7 @@ void merge(VisualWrapper<std::vector<int>> &array, size_t low, size_t mid, size_
 void merge_sort(VisualWrapper<std::vector<int>> &array, size_t low, size_t high) {
   if (low < high) {
     size_t mid = low+(high-low)/2;
+    array.hot_point(high, BLUE);
     merge_sort(array, low, mid);
     merge_sort(array, mid+1, high);
     array.hot_point(mid);
@@ -362,8 +363,7 @@ void immersion_sort(VisualWrapper<std::vector<int>> &array, int low, int high, s
     array.hot_point(mid, RED);
     merge(array, low, mid, high);
   } else {
-    array.hot_point(low, GREEN);
-    array.hot_point(high, GREEN);
+    array.hot_point(high, BLUE);
     insertion_sort(array, low, high);
   }
 }
