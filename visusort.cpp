@@ -104,8 +104,7 @@ void clear_column_to_bottom(int max_y, int x) {
   }
 }
 struct VisualWrapperConfig {
-  size_t wait_for_change_ms = 1;
-  size_t wait_after_ms = 5;
+  size_t wait_for_change_ms = 5;
 };
 
 template <typename T>
@@ -122,7 +121,6 @@ class VisualWrapper {
     std::this_thread::sleep_for(std::chrono::milliseconds(config.wait_for_change_ms));
     renderer(array, max_y, max_x, i, YELLOW);
     refresh();
-    std::this_thread::sleep_for(std::chrono::milliseconds(config.wait_after_ms));
   }
   void render_all() {
     while (should_render) {
@@ -156,6 +154,15 @@ public:
 
   auto end() {
     return &array[size()];
+  }
+
+  void increase_wait() {
+    config.wait_for_change_ms++;
+  }
+
+  void decrease_wait() {
+    if (config.wait_for_change_ms) config.wait_for_change_ms--;
+
   }
 
   void stop_render() {
@@ -195,11 +202,8 @@ public:
   right = tmp; \
 
 size_t read_envs(VisualWrapperConfig &config, int max_x) {
-  if (const char * str = std::getenv("VISUSORT_WAIT_FOR_CHANGE")) {
+  if (const char * str = std::getenv("VISUSORT_WAIT")) {
     config.wait_for_change_ms = atoi(str);
-  }
-  if (const char * str = std::getenv("VISUSORT_WAIT_AFTER")) {
-    config.wait_after_ms = atoi(str);
   }
   if (const char * sizestr = std::getenv("VISUSORT_SIZE")) {
      if (int out=atoi(sizestr)) {
@@ -432,18 +436,28 @@ void you_sort(VisualWrapper<std::vector<int>> &array) {
       case 'G':
       selected = array.size()-1;
       break;
-      case 'H':
       case 'K':
         if (selected-1 >= 0) {
           swap(array[selected], array[selected-1]);
           selected--;
         }
       break;
+      case 'H':
+        {
+          swap(array[selected], array[0]);
+          selected = 0;
+        }
+      break;
       case 'J':
-      case 'L':
         if (selected+1 < array.size()) {
           swap(array[selected], array[selected+1]);
           selected++;
+        }
+      break;
+      case 'L':
+        {
+          swap(array[selected], array[array.size()-1]);
+          selected = array.size()-1;
         }
       break;
       case 'q':
@@ -474,6 +488,13 @@ void you_sort(VisualWrapper<std::vector<int>> &array) {
         array.start_render();
         std::sort(array.begin(), array.end());
         array.stop_render();
+      break;
+      case '+':
+      case '=':
+        array.increase_wait();
+      break;
+      case '-':
+        array.decrease_wait();
       break;
       case '\n':
         {
