@@ -123,7 +123,7 @@ class VisualWrapper {
   }
 public:
   VisualWrapper(void (*renderer)(const T&, int, int, size_t, Color), T &array, VisualWrapperConfig config) 
-  : array(array), renderer(renderer), config(config) {}
+  :array(array), renderer(renderer), config(config) {}
   inline void join() {
     if (last_thread) {
       last_thread->join();
@@ -193,7 +193,7 @@ void bubble_sort(VisualWrapper<std::vector<int>> &array) {
 
 }
 
-// call: insertion_sort(*array, 0, array->size()-1)
+// call:insertion_sort(*array, 0, array->size()-1)
 void insertion_sort(VisualWrapper<std::vector<int>> &array, size_t start, size_t n) {
   for (int i = start+1; i <= n; i++) {
     auto key = array[i];
@@ -232,7 +232,7 @@ void merge(VisualWrapper<std::vector<int>> &array, size_t low, size_t mid, size_
     r++;
   }
 }
- // call: merge_sort(*array, 0, array->size()-1)
+ // call:merge_sort(*array, 0, array->size()-1)
 void merge_sort(VisualWrapper<std::vector<int>> &array, size_t low, size_t high) {
   if (low < high) {
     size_t mid = low+(high-low)/2;
@@ -258,7 +258,7 @@ size_t partition(VisualWrapper<std::vector<int>> &array, size_t low, size_t high
   return i+1;
 }
 
- // call: quick_sort(*array, 0, array->size()-1)
+ // call:quick_sort(*array, 0, array->size()-1)
 void quick_sort(VisualWrapper<std::vector<int>> &array, int low, int high) {
   if (low < high) {
     size_t p = partition(array, low, high);
@@ -286,7 +286,7 @@ void move_mo3_to_high(VisualWrapper<std::vector<int>> &array, int low, int high)
   swap(array[median], array[high]);
 }
 
- // call: mo3_quick_sort(*array, 0, array->size()-1)
+ // call:mo3_quick_sort(*array, 0, array->size()-1)
 void mo3_quick_sort(VisualWrapper<std::vector<int>> &array, int low, int high) {
   if (low < high) {
     move_mo3_to_high(array, low, high);
@@ -299,7 +299,7 @@ void mo3_quick_sort(VisualWrapper<std::vector<int>> &array, int low, int high) {
 
 void commie_sort(VisualWrapper<std::vector<int>> &array) {
   int sum = 0;
-  for (auto &item: array.as_array()) {
+  for (auto &item:array.as_array()) {
     sum+=item;
   }
   int mean = sum/array.size();
@@ -359,7 +359,7 @@ void heap_sort(VisualWrapper<std::vector<int>> &array) {
   }
 }
 
-// call: immersion_sort(*array, 0, array->size()-1, 10)
+// call:immersion_sort(*array, 0, array->size()-1, 10)
 void immersion_sort(VisualWrapper<std::vector<int>> &array, int low, int high, size_t insertion_count) {
   if (high - low > insertion_count) {
     size_t mid = low+(high-low)/2;
@@ -378,12 +378,12 @@ void you_sort(VisualWrapper<std::vector<int>> &array) {
   while (int ch = getch()) {
     array.hot_point(selected, WHITE);
     switch (ch) {
-      case 'j': 
-      case 'l': 
+      case 'j':
+      case 'l':
         selected=(selected+1)%array.size();
       break;
-      case 'h': 
-      case 'k': 
+      case 'h':
+      case 'k':
         if (selected) selected--;
         else selected=array.size()-1;
       break;
@@ -393,36 +393,39 @@ void you_sort(VisualWrapper<std::vector<int>> &array) {
       case 'G':
       selected = array.size()-1;
       break;
-      case 'H': 
-      case 'K': 
+      case 'H':
+      case 'K':
         if (selected-1 >= 0) {
           swap(array[selected], array[selected-1]);
           selected--;
         }
       break;
-      case 'J': 
-      case 'L': 
+      case 'J':
+      case 'L':
         if (selected+1 < array.size()) {
           swap(array[selected], array[selected+1]);
           selected++;
         }
       break;
-      case 'q': 
+      case 'q':
         quick_sort(array, 0, array.size()-1);
       break;
-      case 'Q': 
+      case 'Q':
         mo3_quick_sort(array, 0, array.size()-1);
       break;
-      case 'm': 
+      case 'm':
         merge_sort(array, 0, array.size()-1);
       break;
-      case 'i': 
+      case 'b':
+        bubble_sort(array);
+      break;
+      case 'i':
         insertion_sort(array, 0, array.size()-1);
       break;
-      case 'I': 
+      case 'I':
         immersion_sort(array, 0, array.size()-1, 10);
       break;
-      case 'e': 
+      case 'e':
         heap_sort(array);
       break;
       case 's':
