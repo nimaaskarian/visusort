@@ -318,8 +318,16 @@ bool is_sorted(const std::vector<int> &array) {
 
 void shuffle(VisualWrapper<std::vector<int>> &array) {
   size_t n = array.size();
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> distr(0, n-1);
+  auto touched = new bool[array.size()]{};
+
   for (int i = 0; i < n; i++) {
-    auto j = rand() % n;
+    if (touched[i]) continue;
+    auto j = distr(gen);
+    touched[i] = true;
+    touched[j] = true;
     swap(array[i], array[j]);
   }
 }
