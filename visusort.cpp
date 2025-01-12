@@ -160,6 +160,10 @@ public:
     config.wait_for_change_ms++;
   }
 
+  void set_wait(size_t wait) {
+    config.wait_for_change_ms = wait;
+  }
+
   void decrease_wait() {
     if (config.wait_for_change_ms) config.wait_for_change_ms--;
 
@@ -508,6 +512,11 @@ void you_sort(VisualWrapper<std::vector<int>> &array) {
           render_array(array,max_y, max_x, RED);
           std::this_thread::sleep_for(std::chrono::milliseconds(500));
           render_array(array,max_y, max_x, WHITE);
+        }
+      break;
+      default:
+        if (ch >= '0' && ch <= '9') {
+          array.set_wait(ch-'0');
         }
       break;
     }
