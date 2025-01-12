@@ -410,6 +410,9 @@ void you_sort(VisualWrapper<std::vector<int>> &array) {
       case 'q': 
         quick_sort(array, 0, array.size()-1);
       break;
+      case 'Q': 
+        mo3_quick_sort(array, 0, array.size()-1);
+      break;
       case 'm': 
         merge_sort(array, 0, array.size()-1);
       break;
