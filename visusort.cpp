@@ -187,7 +187,7 @@ void bubble_sort(VisualWrapper<std::vector<int>> &array) {
         swapped = true;
       }
     }
-    array.hot_point(array.size()-i-1, GREEN);
+    array.hot_point(array.size()-i-1, BLUE);
     if (!swapped) break;
   }
 
