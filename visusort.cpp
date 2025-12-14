@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <curses.h>
 #include <deque>
 #include <atomic>
 #include <clocale>
@@ -7,6 +8,7 @@
 #include <iterator>
 #include <ncurses.h>
 #include <random>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -507,29 +509,48 @@ void you_sort(VisualWrapper<std::vector<int>> &array) {
   std::deque<std::vector<int>> buff;
   buff.push_front(array._array);
   auto head = 0;
+  unsigned int cleanup = 0;
   while (int ch = getch()) {
+    if (cleanup) {
+      for (int i = 1; i <= cleanup; i+=2) {
+        mvprintw(max_y-1,i, " ");
+      }
+      cleanup = 0;
+    }
     if (ch == 'u') {
+      std::string output;
       if (head+1 < buff.size()) {
         array.start_render();
         array._array = buff.at(++head);
         array.stop_render();
+        output = "(";
+        output+=std::to_string(head+1);
+        output+="/";
+        output+=std::to_string(buff.size());
+        output+=")";
+      } else {
+        output = "already at oldest change";
       }
-      for (int i =0; i<buff.size(); i++) {
-        array.hot_point(i, BLUE);
-      }
-      array.hot_point(head, GREEN);
+      mvprintw(max_y-1, 0, "%s", output.c_str());
+      cleanup = output.length();
       continue;
     }
     if (strcmp(keyname(ch), "^R") == 0) {
+      std::string output;
       if (head != 0) {
         array.start_render();
         array._array = buff.at(--head);
         array.stop_render();
+        output = "(";
+        output+=std::to_string(head+1);
+        output+="/";
+        output+=std::to_string(buff.size());
+        output+=")";
+      } else {
+        output = "already at newest change";
       }
-      for (int i =0; i<buff.size(); i++) {
-        array.hot_point(i, BLUE);
-      }
-      array.hot_point(head, GREEN);
+      mvprintw(max_y-1, 0, "%s", output.c_str());
+      cleanup = output.length();
       continue;
     }
     array.hot_point(selected, WHITE);
