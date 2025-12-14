@@ -429,9 +429,6 @@ void bogo_randomized_sort(VisualWrapper<std::vector<int>> &a) {
 // call: bool * sorted_found= new bool{false}; bogo_deterministic_sort(*array, array->size(), sorted_found)
 void bogo_deterministic_sort(VisualWrapper<std::vector<int>> &a, int size, bool * sorted_found)
 {
-  if (*sorted_found == true) {
-    return;
-  }
   // if size becomes 1 then prints the obtained
   // permutation
   if (size == 1) {
