@@ -1,7 +1,9 @@
 #include <algorithm>
+#include <deque>
 #include <atomic>
 #include <clocale>
 #include <cstring>
+#include <functional>
 #include <iterator>
 #include <ncurses.h>
 #include <random>
@@ -111,17 +113,16 @@ struct VisualWrapperConfig {
 
 template <typename T>
 class VisualWrapper {
-  T array;
   VisualWrapperConfig config;
+  void (*renderer)(const T&, int, int, size_t, Color);
   std::thread * last_thread = nullptr;
   std::atomic_bool should_render;
-  void (*renderer)(const T&, int, int, size_t, Color);
   void render_thread(size_t i) {
     int max_y, max_x;
     getmaxyx(stdscr, max_y, max_x);
     clear_column_to_bottom(max_y, i*2);
     std::this_thread::sleep_for(std::chrono::milliseconds(config.wait_for_change_ms));
-    renderer(array, max_y, max_x, i, YELLOW);
+    renderer(_array, max_y, max_x, i, YELLOW);
     refresh();
   }
   void render_all() {
@@ -134,8 +135,9 @@ class VisualWrapper {
   }
 
 public:
+  T _array;
   VisualWrapper(void (*renderer)(const T&, int, int, size_t, Color), T &array, VisualWrapperConfig config) 
-  :array(array), renderer(renderer), config(config) {}
+  :_array(array), renderer(renderer), config(config) {}
   inline void join() {
     if (last_thread) {
       last_thread->join();
@@ -151,11 +153,11 @@ public:
   }
 
   auto begin() {
-    return &array[0];
+    return &_array[0];
   }
 
   auto end() {
-    return &array[size()];
+    return &_array[size()];
   }
 
   void increase_wait() {
@@ -177,21 +179,21 @@ public:
   }
 
   const T& as_array() const {
-    return array;
+    return _array;
   }
 
   auto size() const {
-    return array.size();
+    return _array.size();
   }
 
   auto& operator[](size_t i) const {
-    return array[i];
+    return _array[i];
   }
 
   auto& operator[](size_t i) {
     join();
     last_thread = new std::thread(&VisualWrapper::render_thread, this, i);
-    return array[i];
+    return _array[i];
   }
 
   void hot_point(size_t i, Color color = RED) {
@@ -199,7 +201,7 @@ public:
     int max_y, max_x;
     getmaxyx(stdscr, max_y, max_x);
     clear_column_to_bottom(max_y, i*2);
-    renderer(array, max_y, max_x, i, color);
+    renderer(_array, max_y, max_x, i, color);
   }
 };
 
@@ -234,7 +236,7 @@ void bubble_sort(VisualWrapper<std::vector<int>> &array) {
 
 }
 
-// call:insertion_sort(*array, 0, array->size()-1)
+// call: insertion_sort(*array, 0, array->size()-1)
 void insertion_sort(VisualWrapper<std::vector<int>> &array, size_t start, size_t n) {
   for (int i = start+1; i <= n; i++) {
     auto key = array[i];
@@ -273,7 +275,7 @@ void merge(VisualWrapper<std::vector<int>> &array, size_t low, size_t mid, size_
     r++;
   }
 }
- // call:merge_sort(*array, 0, array->size()-1)
+ // call: merge_sort(*array, 0, array->size()-1)
 void merge_sort(VisualWrapper<std::vector<int>> &array, size_t low, size_t high) {
   if (low < high) {
     size_t mid = low+(high-low)/2;
@@ -299,7 +301,7 @@ size_t partition(VisualWrapper<std::vector<int>> &array, size_t low, size_t high
   return i+1;
 }
 
- // call:counting_sort(*array, max_y)
+// call: counting_sort(*array, max_y)
 void counting_sort(VisualWrapper<std::vector<int>> &array, unsigned int k) {
   std::vector<int> a;
   a.reserve(array.size());
@@ -310,6 +312,7 @@ void counting_sort(VisualWrapper<std::vector<int>> &array, unsigned int k) {
   }
   for (int i = 0; i < a.size(); i++) {
     c[a[i]] = c[a[i]]+1;
+    array.hot_point(i, BLUE);
   }
   for (int i = 1; i < k+1; i++) {
     c[i] = c[i] + c[i-1];
@@ -322,7 +325,7 @@ void counting_sort(VisualWrapper<std::vector<int>> &array, unsigned int k) {
 }
 
 
- // call:quick_sort(*array, 0, array->size()-1)
+ // call: quick_sort(*array, 0, array->size()-1)
 void quick_sort(VisualWrapper<std::vector<int>> &array, int low, int high) {
   if (low < high) {
     size_t p = partition(array, low, high);
@@ -332,13 +335,7 @@ void quick_sort(VisualWrapper<std::vector<int>> &array, int low, int high) {
   }
 }
 
-void move_mo3_to_high(VisualWrapper<std::vector<int>> &array, int low, int high) {
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<> distr(low, high);
-  size_t i1 = distr(gen);
-  size_t i2 = distr(gen);
-  size_t i3 = distr(gen);
+int median_of_three(const std::vector<int> & array, size_t i1,size_t i2,size_t i3) {
   size_t median;
   if (array[i1] > array[i2] == array[i2] < array[i3]) {
     median = i2;
@@ -347,13 +344,41 @@ void move_mo3_to_high(VisualWrapper<std::vector<int>> &array, int low, int high)
   } else {
     median = i3;
   }
-  swap(array[median], array[high]);
+  return median;
 }
 
- // call:mo3_quick_sort(*array, 0, array->size()-1)
+void move_mo9_to_high(VisualWrapper<std::vector<int>> &array, int low, int high) {
+  size_t i1 = low;
+  size_t i2 = (low+high)/8;
+  size_t i3 = (low+high)/8*2;
+  size_t i4 = (low+high)/8*3;
+  size_t i5 = (low+high)/8*4;
+  size_t i6 = (low+high)/8*5;
+  size_t i7 = (low+high)/8*6;
+  size_t i8 = (low+high)/8*7;
+  size_t i9 = high;
+  size_t median1 = median_of_three(array.as_array(), i1, i2, i3);
+  size_t median2 = median_of_three(array.as_array(), i3, i4, i5);
+  size_t median3 = median_of_three(array.as_array(), i7, i8, i9);
+
+  swap(array[median_of_three(array.as_array(), median1, median2, median3)], array[high]);
+}
+
+// call: mo3_quick_sort(*array, 0, array->size()-1)
 void mo3_quick_sort(VisualWrapper<std::vector<int>> &array, int low, int high) {
   if (low < high) {
-    move_mo3_to_high(array, low, high);
+    swap(array[median_of_three(array.as_array(), low, (high+low)/2, high)], array[high]);
+    size_t p = partition(array, low, high);
+    array.hot_point(p, BLUE);
+    quick_sort(array, low, p-1);
+    quick_sort(array, p+1, high);
+  }
+}
+
+// call: mo9_quick_sort(*array, 0, array->size()-1)
+void mo9_quick_sort(VisualWrapper<std::vector<int>> &array, int low, int high) {
+  if (low < high) {
+    move_mo9_to_high(array, low, high);
     size_t p = partition(array, low, high);
     array.hot_point(p, BLUE);
     quick_sort(array, low, p-1);
@@ -396,9 +421,44 @@ void shuffle(VisualWrapper<std::vector<int>> &array) {
   }
 }
 
-void bogo_sort(VisualWrapper<std::vector<int>> &array) {
-  while (!is_sorted(array.as_array()))
-    shuffle(array);
+void bogo_randomized_sort(VisualWrapper<std::vector<int>> &a) {
+  while (!is_sorted(a.as_array())) 
+    shuffle(a);
+}
+
+// call: bool * sorted_found= new bool{false}; bogo_deterministic_sort(*array, array->size(), sorted_found)
+void bogo_deterministic_sort(VisualWrapper<std::vector<int>> &a, int size, bool * sorted_found)
+{
+  if (*sorted_found == true) {
+    return;
+  }
+  // if size becomes 1 then prints the obtained
+  // permutation
+  if (size == 1) {
+      if (is_sorted(a.as_array())) {
+        *sorted_found = true;
+      }
+      return;
+  }
+
+  for (int i = 0; i < size; i++) {
+      bogo_deterministic_sort(a, size - 1, sorted_found);
+      if (*sorted_found == true) {
+        return;
+      }
+
+      // if size is odd, swap 0th i.e (first) and 
+      // (size-1)th i.e (last) element
+      if (size % 2 == 1) {
+        swap(a[0], a[size - 1]);
+      }
+
+      // if size is even, swap ith and 
+      // (size-1)th i.e (last) element
+      else {
+        swap(a[i], a[size - 1]);
+      }
+  }
 }
 
 void max_heapify(VisualWrapper<std::vector<int>> &array, size_t i, size_t n) {
@@ -431,7 +491,7 @@ void heap_sort(VisualWrapper<std::vector<int>> &array) {
   }
 }
 
-// call:immersion_sort(*array, 0, array->size()-1, 10)
+// call: immersion_sort(*array, 0, array->size()-1, 10)
 void immersion_sort(VisualWrapper<std::vector<int>> &array, int low, int high, size_t insertion_count) {
   if (high - low > insertion_count) {
     size_t mid = low+(high-low)/2;
@@ -447,23 +507,55 @@ void immersion_sort(VisualWrapper<std::vector<int>> &array, int low, int high, s
 
 void you_sort(VisualWrapper<std::vector<int>> &array) {
   int selected = 0;
+  std::deque<std::vector<int>> buff;
+  buff.push_front(array._array);
+  auto head = 0;
   while (int ch = getch()) {
+    if (ch == 'u') {
+      if (head+1 < buff.size()) {
+        array.start_render();
+        array._array = buff.at(++head);
+        array.stop_render();
+      }
+      for (int i =0; i<buff.size(); i++) {
+        array.hot_point(i, BLUE);
+      }
+      array.hot_point(head, GREEN);
+      continue;
+    }
+    if (strcmp(keyname(ch), "^R") == 0) {
+      if (head != 0) {
+        array.start_render();
+        array._array = buff.at(--head);
+        array.stop_render();
+      }
+      for (int i =0; i<buff.size(); i++) {
+        array.hot_point(i, BLUE);
+      }
+      array.hot_point(head, GREEN);
+      continue;
+    }
     array.hot_point(selected, WHITE);
+    bool changed = true;
     switch (ch) {
       case 'j':
       case 'l':
         selected=(selected+1)%array.size();
+        changed = false;
       break;
       case 'h':
       case 'k':
         if (selected) selected--;
         else selected=array.size()-1;
+        changed = false;
       break;
       case 'g':
-      selected = 0;
+        selected = 0;
+        changed = false;
       break;
       case 'G':
-      selected = array.size()-1;
+        selected = array.size()-1;
+        changed = false;
       break;
       case 'K':
         if (selected-1 >= 0) {
@@ -492,6 +584,9 @@ void you_sort(VisualWrapper<std::vector<int>> &array) {
       case 'q':
         quick_sort(array, 0, array.size()-1);
       break;
+      case 'w':
+        mo9_quick_sort(array, 0, array.size()-1);
+      break;
       case 'Q':
         mo3_quick_sort(array, 0, array.size()-1);
       break;
@@ -519,17 +614,30 @@ void you_sort(VisualWrapper<std::vector<int>> &array) {
       case 'C':
         commie_sort(array);
       break;
+      case 'B':
+      {
+        bool * sorted_found= new bool{false};
+        bogo_deterministic_sort(array, array.size(), sorted_found);
+      }
+      break;
       case 'S':
         array.start_render();
         std::sort(array.begin(), array.end());
         array.stop_render();
       break;
+      case 'D':
+        array.start_render();
+        std::sort(array.begin(), array.end(), std::greater<>());
+        array.stop_render();
+      break;
       case '+':
       case '=':
         array.increase_wait();
+        changed = false;
       break;
       case '-':
         array.decrease_wait();
+        changed = false;
       break;
       case '\n':
         {
@@ -543,6 +651,7 @@ void you_sort(VisualWrapper<std::vector<int>> &array) {
           render_array(array,max_y, max_x, RED);
           std::this_thread::sleep_for(std::chrono::milliseconds(500));
           render_array(array,max_y, max_x, WHITE);
+          changed = false;
         }
       break;
       default:
@@ -552,5 +661,12 @@ void you_sort(VisualWrapper<std::vector<int>> &array) {
       break;
     }
     array.hot_point(selected);
+    if (changed) {
+      buff.push_front(array._array);
+      if (head != 0) {
+        buff.erase(buff.begin(), buff.begin()+head);
+        head = 0;
+      }
+    }
   }
 }

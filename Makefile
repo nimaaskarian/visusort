@@ -23,18 +23,18 @@ run: visusort
 	echo '    data_init(_data, data_size, max_y);' >> .visusort.cpp
 	echo '    VisualWrapper<std::vector<int>> * array;' >> .visusort.cpp
 	grep -o -E 'void\s.*_sort\(' visusort.cpp | grep -v -f .algoignore | uniq | cut -f '2-' -d ' '| cut -f 1  -d '(' | while read -r line; do \
-		num=`echo $$line | wc -c`; \
+		num=`echo "$$line" | wc -c`; \
 		num=`expr $$num / 2`; \
-		call=`grep -o -E "call: $$line\(.*\)" visusort.cpp | cut -d ' ' -f "2-"`;\
-		echo $$line $$call; \
-		[ "$$call" ] || call=$$line"(*array)";\
-		call="$$call;";\
+		call=$$(grep -o -E "call:.* $$line\(.*\)" visusort.cpp | cut -d ' ' -f "2-");\
+		echo "$$line $$call"; \
+		[ "$$call" ] || call="$${line}(*array)";\
+		call="$${call};";\
 		echo '		array = new VisualWrapper<std::vector<int>> (render_one_item, _data, config);' >> .visusort.cpp; \
 		echo "		mvprintw(max_y/2, max_x/2-"$$num", \""$$line"\");" >> .visusort.cpp;  \
 		echo '		getch();' >> .visusort.cpp; \
 		echo '		clear();' >> .visusort.cpp; \
 		echo '		render_array(_data, max_y, max_x, WHITE);' >> .visusort.cpp;  \
-		echo '		'$$call >> .visusort.cpp; \
+		echo "		$$call" >> .visusort.cpp; \
 		echo '		array->join();' >> .visusort.cpp; \
 		echo '		clear();' >> .visusort.cpp; \
 		echo '		refresh();' >> .visusort.cpp; \
