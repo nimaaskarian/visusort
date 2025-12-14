@@ -13,7 +13,6 @@ run: visusort
 	echo '	int main (int argc, char *argv[]) {' >> .visusort.cpp
 	echo '		start_ncurses();' >> .visusort.cpp
 	echo '' >> .visusort.cpp
-	echo '		int max_y, max_x;' >> .visusort.cpp
 	echo '		getmaxyx(stdscr, max_y, max_x);' >> .visusort.cpp
 	echo '    VisualWrapperConfig config{};' >> .visusort.cpp
 	echo '    size_t data_size = read_envs(config, max_x);' >> .visusort.cpp

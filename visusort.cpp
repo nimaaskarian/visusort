@@ -2,6 +2,7 @@
 #include <atomic>
 #include <clocale>
 #include <cstring>
+#include <iterator>
 #include <ncurses.h>
 #include <random>
 #include <thread>
@@ -31,6 +32,7 @@ inline void start_ncurses() {
   init_pair(BLUE, COLOR_BLUE, COLOR_BLACK);
 }
 
+int max_y, max_x;
 void data_init_random(std::vector<int>& data,size_t size, int max) {
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -297,6 +299,29 @@ size_t partition(VisualWrapper<std::vector<int>> &array, size_t low, size_t high
   return i+1;
 }
 
+ // call:counting_sort(*array, max_y)
+void counting_sort(VisualWrapper<std::vector<int>> &array, unsigned int k) {
+  std::vector<int> a;
+  a.reserve(array.size());
+  std::copy(array.begin(), array.end(), std::back_inserter(a));
+  std::vector<int> c(k+1);
+  for (int i = 0; i <= k; i++) {
+    c[i] = 0;
+  }
+  for (int i = 0; i < a.size(); i++) {
+    c[a[i]] = c[a[i]]+1;
+  }
+  for (int i = 1; i < k+1; i++) {
+    c[i] = c[i] + c[i-1];
+  }
+  for (int i = a.size()-1; i >= 0; i--) {
+    auto index = --c[a[i]];
+    array[index] = a[i];
+    array.hot_point(index, GREEN);
+  }
+}
+
+
  // call:quick_sort(*array, 0, array->size()-1)
 void quick_sort(VisualWrapper<std::vector<int>> &array, int low, int high) {
   if (low < high) {
@@ -487,6 +512,12 @@ void you_sort(VisualWrapper<std::vector<int>> &array) {
       break;
       case 's':
         shuffle(array);
+      break;
+      case 'c':
+        counting_sort(array, max_y);
+      break;
+      case 'C':
+        commie_sort(array);
       break;
       case 'S':
         array.start_render();
